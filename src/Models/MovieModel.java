@@ -1,7 +1,7 @@
 package Models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MovieModel {
     public static final String MOVIE_TIME_MORNING = "Morning";
@@ -19,7 +19,7 @@ public class MovieModel {
     private int movieCapacity;
     private String movieDate;
     private String movieTimeSlot;
-    private List<String> registeredClients;
+    private Map<String, Integer> registeredClient;
     public static final int EVENT_FULL = -1;
     public static final int ALREADY_REGISTERED = 0;
     public static final int ADD_SUCCESS = 1;
@@ -31,7 +31,7 @@ public class MovieModel {
         this.movieTimeSlot = detectMovieTimeSlot(movieID);
         this.movieServer = detectMovieServer(movieID);
         this.movieDate = detectMovieDate(movieID);
-        registeredClients = new ArrayList<>();
+        registeredClient = new ConcurrentHashMap<>();
     }
 
     public static String detectMovieServer(String eventID) {
@@ -72,7 +72,13 @@ public class MovieModel {
         this.movieCapacity = movieCapacity;
     }
     public int getMovieRemainCapacity() {
-        return movieCapacity - registeredClients.size();
+        int occupied = 0;
+        for (int value : registeredClient.values()) {
+            occupied = occupied + value;
+        }
+        System.out.println("moviecapacity remain:" + (movieCapacity - occupied));
+        return movieCapacity - occupied;
+
     }
     public String getMovieDate() {
         return movieDate;
@@ -80,33 +86,55 @@ public class MovieModel {
     public String getMovieTimeSlot() {
         return movieTimeSlot;
     }
-    public boolean isFull() {
-        return getMovieCapacity() == registeredClients.size();
+    public boolean isFull(int noOfTickets) {
+        System.out.println("remaining capacity :" + getMovieRemainCapacity());
+        if(getMovieRemainCapacity() <= 0 || noOfTickets > getMovieRemainCapacity()) {
+            return true;
+        }
+        return false;
     }
 
     public List<String> getRegisteredClientIDs() {
-        return registeredClients;
+        Set<String> keySet = registeredClient.keySet();
+        ArrayList<String> listOfClientId = new ArrayList<String>(keySet);
+        return listOfClientId;
     }
 
-    public int addRegisteredClientID(String registeredClientID) {
-        if (!isFull()) {
-            if (registeredClients.contains(registeredClientID)) {
-                return ALREADY_REGISTERED;
+    public int addRegisteredClientID(String registeredClientID, int ticketAmount) {
+        if (!isFull(ticketAmount)) {
+            if (registeredClient.containsKey(registeredClientID)) {
+                registeredClient.put(registeredClientID, registeredClient.get(registeredClientID) + ticketAmount);
             } else {
-                registeredClients.add(registeredClientID);
-                return ADD_SUCCESS;
+                registeredClient.put(registeredClientID, ticketAmount);
             }
+            System.out.println(" registered client : " + registeredClient);
+            return ADD_SUCCESS;
         } else {
             return EVENT_FULL;
         }
     }
 
-    public boolean removeRegisteredClientID(String registeredClientID) {
-        return registeredClients.remove(registeredClientID);
+    public boolean removeRegisteredClientId(String registeredClientID) {
+        registeredClient.remove(registeredClientID);
+        return true;
+    }
+
+    public boolean removeRegisteredClientBooking(String registeredClientID, int ticketAmount) {
+        if(registeredClient.containsKey(registeredClientID)){
+            if (registeredClient.get(registeredClientID) >= ticketAmount) {
+                registeredClient.put(registeredClientID, registeredClient.get(registeredClientID) - ticketAmount);
+                if(registeredClient.get(registeredClientID) == 0) {
+                    removeRegisteredClientId(registeredClientID);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String toString() {
-        return " (" + getMovieID() + ") in the " + getMovieTimeSlot() + " of " + getMovieDate() + " Total[Remaining] Capacity: " + getMovieCapacity() + "[" + getMovieRemainCapacity() + "]";
+        return getMovieID() + " " + getMovieRemainCapacity();
+        // return " (" + getMovieID() + ") in the " + getMovieTimeSlot() + " of " + getMovieDate() + " Total[Remaining] Capacity: " + getMovieCapacity() + "[" + getMovieRemainCapacity() + "]";
     }
 }

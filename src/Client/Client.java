@@ -2,32 +2,57 @@ package Client;
 
 import Interface.ClientInterface;
 
+import java.io.FileWriter;
 import java.io.IOException;
-import java.rmi.Naming;
+
+import movieTicketBookingInterfaceApp.movieTicketBookingInterface;
+import movieTicketBookingInterfaceApp.movieTicketBookingInterfaceHelper;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.CosNaming.NamingContextPackage.CannotProceed;
+import org.omg.CosNaming.NamingContextPackage.InvalidName;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
+
 import java.rmi.NotBoundException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 import static Constants.Constants.*;
 
 
 public class Client {
-    static Scanner input = new Scanner(System.in);
+    public static String userSession;
+    public static String log;
     public static void main(String[] args) throws Exception {
-        startMain();
+        try {
+            ORB orb = ORB.init(args, null);
+            // -ORBInitialPort 1050 -ORBInitialHost localhost
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+            startMain(ncRef);
+        } catch (Exception e) {
+            System.out.println("Client ORB init exception: " + e);
+            e.printStackTrace();
+        }
     }
-    public static void startMain() throws IOException, NotBoundException {
+    public static void startMain(NamingContextExt ncRef) throws IOException, NotBoundException, InvalidName, CannotProceed, NotFound {
+
+        Scanner input = new Scanner(System.in);
         System.out.println("Please enter user id: ");
         String userID = input.nextLine();
-
+        userSession = userID;
         String clientType = checkClientType(userID);
         String serverPort = getServerPort(userID.substring(0,3));
+        movieTicketBookingInterface movieObj = movieTicketBookingInterfaceHelper.narrow(ncRef.resolve_str(serverPort));
 
         if(clientType == "Admin"){
             //logger file
             if(serverPort == "false"){
                 return;
             }
-            ClientInterface adminObj = (ClientInterface) Naming.lookup(serverPort);
+//            ClientInterface adminObj = (ClientInterface) Naming.lookup(serverPort);
             while (true) {
                 String customerID;
                 String movieName;
@@ -42,20 +67,26 @@ public class Client {
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
                         movieCapacity = promptForMovieCapacity();
-                        serverResponse = adminObj.addMovieSlots(movieID, movieName, movieCapacity);
+                        log="Add Movie Slots";
+                        serverResponse = movieObj.addMovieSlots(movieID, movieName, movieCapacity);
+                        writeToLogFile("addMovieSlots",userID+" "+movieID+" "+movieName+" "+movieCapacity,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 2:
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
-                        serverResponse = adminObj.removeMovieSlots(movieID, movieName);
+                        log="Remove Movie Slots";
+                        serverResponse = movieObj.removeMovieSlots(movieID, movieName);
+                        writeToLogFile("removeMovieSlots",userID+" "+movieID+" "+movieName,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 3:
                         movieName = promptForMovieType();
-                        serverResponse = adminObj.listMovieShowAvailability(movieName);
+                        log="List Movie Shows";
+                        serverResponse = movieObj.listMovieShowAvailability(movieName);
+                        writeToLogFile("listMovieShowAvailability",userID+" "+" "+movieName,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
@@ -64,13 +95,17 @@ public class Client {
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
                         ticketCount = promptForTotalTicket();
-                        serverResponse = adminObj.bookMovieTickets(customerID, movieID, movieName, ticketCount);
+                        log="Book Movie Tickets";
+                        serverResponse = movieObj.bookMovieTickets(customerID, movieID, movieName, ticketCount);
+                        writeToLogFile("bookMovieTickets",userID+" "+" "+movieName,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 5:
                         customerID = askForCustomerIDFromAdmin(userID.substring(0, 3));
-                        serverResponse = adminObj.getBookingSchedule(customerID);
+                        log="Get Booking Schedule";
+                        serverResponse = movieObj.getBookingSchedule(customerID);
+                        writeToLogFile("getBookingSchedule",userID,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
@@ -79,13 +114,27 @@ public class Client {
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
                         ticketCount = promptForTotalTicket();
-                        serverResponse = adminObj.cancelMovieTickets(customerID, movieID, movieName, ticketCount);
+                        log="Cancel Movie Tickets";
+                        serverResponse = movieObj.cancelMovieTickets(customerID, movieID, movieName, ticketCount);
+                        writeToLogFile("cancelMovieTickets",userID,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 7:
+                        customerID = askForCustomerIDFromAdmin(userID.substring(0, 3));
+                        System.out.println("Please Enter the OLD movie name to be replaced");
+                        movieName = promptForMovieType();
+                        movieID = promptForMovieID();
+                        System.out.println("Please Enter the NEW Movie name to be replaced");
+                        String newMovieName = promptForMovieType();
+                        String newMovieId = promptForMovieID();
+                        ticketCount = promptForTotalTicket();
+                        serverResponse = movieObj.exchangeTickets(customerID, movieID ,newMovieId, newMovieName, movieName, ticketCount);
+                        System.out.println(serverResponse);
+                        break;
+                    case 8:
                         //logger file
-                        startMain();
+                        startMain(ncRef);
                         break;
                 }
             }
@@ -96,7 +145,7 @@ public class Client {
             if(serverPort == "false"){
                 return;
             }
-            ClientInterface customerObj = (ClientInterface) Naming.lookup(serverPort);
+//            ClientInterface customerObj = (ClientInterface) Naming.lookup(serverPort);
             while (true){
                 String movieName;
                 String movieID;
@@ -109,12 +158,16 @@ public class Client {
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
                         ticketCount = promptForTotalTicket();
-                        serverResponse = customerObj.bookMovieTickets(userID, movieID, movieName, ticketCount);
+                        log="Book Movie Tickets";
+                        serverResponse = movieObj.bookMovieTickets(userID, movieID, movieName, ticketCount);
+                        writeToLogFile("bookMovieTickets",userID+" "+" "+movieName,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 2:
-                        serverResponse = customerObj.getBookingSchedule(userID);
+                        log="Get Booking Schedule";
+                        serverResponse = movieObj.getBookingSchedule(userID);
+                        writeToLogFile("getBookingSchedule",userID,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
@@ -122,13 +175,26 @@ public class Client {
                         movieName = promptForMovieType();
                         movieID = promptForMovieID();
                         ticketCount = promptForTotalTicket();
-                        serverResponse = customerObj.cancelMovieTickets(userID, movieID, movieName, ticketCount);
+                        log="Cancel Movie Tickets";
+                        serverResponse = movieObj.cancelMovieTickets(userID, movieID, movieName, ticketCount);
+                        writeToLogFile("cancelMovieTickets",userID,serverResponse);
                         System.out.println(serverResponse);
                         //logger file
                         break;
                     case 4:
+                        System.out.println("Please Enter the OLD movie name to be replaced");
+                        movieName = promptForMovieType();
+                        movieID = promptForMovieID();
+                        System.out.println("Please Enter the NEW Movie name to be replaced");
+                        String newMovieName = promptForMovieType();
+                        String newMovieId = promptForMovieID();
+                        ticketCount = promptForTotalTicket();
+                        serverResponse = movieObj.exchangeTickets(userID, movieID ,newMovieId, newMovieName, movieName, ticketCount);
+                        System.out.println(serverResponse);
+                        break;
+                    case 5:
                         //logger file
-                        startMain();
+                        startMain(ncRef);
                         break;
                 }
             }
@@ -136,13 +202,14 @@ public class Client {
         else {
             System.out.println("Incorrect UserID");
             // Implement Logger
-            startMain();
+            startMain(ncRef);
         }
 
 
     }
 
     private static String askForCustomerIDFromAdmin(String adminID) {
+        Scanner input = new Scanner(System.in);
         System.out.println("Please enter a customerID(Within " + adminID + " Server):");
         String userID = input.next().trim().toUpperCase();
         if (checkClientType(userID) != "Customer" || !userID.substring(0, 3).equals(adminID)) {
@@ -153,16 +220,19 @@ public class Client {
     }
 
     private static int promptForMovieCapacity() {
+        Scanner input = new Scanner(System.in);
         System.out.println("Please enter the booking capacity:");
         return input.nextInt();
     }
 
     private static int promptForTotalTicket() {
+        Scanner input = new Scanner(System.in);
         System.out.println("Please enter the number of tickets:");
         return input.nextInt();
     }
 
     private static String promptForMovieID() {
+        Scanner input = new Scanner(System.in);
         System.out.println("Please enter the Movie ID (e.g ATWM190223)");
         String movieID = input.next().trim().toUpperCase();
         if (movieID.length() == 10) {
@@ -180,6 +250,7 @@ public class Client {
     }
 
     private static String promptForMovieType() {
+        Scanner input = new Scanner(System.in);
         System.out.println("Please choose a Movie Name:");
         System.out.println("1. Avatar");
         System.out.println("2. Avengers");
@@ -210,11 +281,11 @@ public class Client {
 
     private static String getServerPort(String server) {
         if (server.equalsIgnoreCase("ATW")) {
-            return getAtwaterServer();
+            return "atwater";
         } else if (server.equalsIgnoreCase("OUT")) {
-            return getOutremontServer();
+            return "outremont";
         } else if (server.equalsIgnoreCase("VER")) {
-            return getVerdunServer();
+            return "verdun";
         }
         return "false";
     }
@@ -225,7 +296,8 @@ public class Client {
             System.out.println("1. Book Movie Ticket");
             System.out.println("2. Get Booking Schedule");
             System.out.println("3. Cancel Movie Tickets");
-            System.out.println("4. Logout");
+            System.out.println("4. Swap Tickets");
+            System.out.println("5. Logout");
         } else if (userType == "Admin") {
             System.out.println("1. Add Movie Slots");
             System.out.println("2. Remove Movie Slots");
@@ -233,7 +305,22 @@ public class Client {
             System.out.println("4. Book Movie Ticket");
             System.out.println("5. Get Booking Schedule");
             System.out.println("6. Cancel Movie Tickets");
-            System.out.println("7. Logout");
+            System.out.println("7. Swap Tickets");
+            System.out.println("8. Logout");
+        }
+    }
+
+    public static void writeToLogFile(String operation, String params, String responceDetails) {
+        try {
+            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING\\movie_ticket_booking_system_design\\src\\Logs\\" + userSession + ".txt", true);
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            String log = dateFormat.format(LocalDateTime.now()) + " : " + operation + " : " + params + " : "
+                    + " : " + responceDetails + "\n";
+            myWriter.write(log);
+            myWriter.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

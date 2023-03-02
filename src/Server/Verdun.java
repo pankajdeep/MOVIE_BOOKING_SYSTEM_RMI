@@ -2,6 +2,13 @@ package Server;
 
 import MethodImplementation.MethodImplementation;
 import Models.MovieModel;
+import movieTicketBookingInterfaceApp.movieTicketBookingInterface;
+import movieTicketBookingInterfaceApp.movieTicketBookingInterfaceHelper;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NameComponent;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+import org.omg.PortableServer.POA;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -14,21 +21,54 @@ public class Verdun {
     private static final String serverName = "Verdun";
     private static final int Verdun_Server_Port = 6677;
     public static void main(String[] args) throws Exception{
-        MethodImplementation mi = new MethodImplementation(serverID, serverName);
-        Naming.bind("rmi://localhost/ver", mi);
-        System.out.println("Server Verdun started");
-        //Log File
-        addTestData(mi);
-        Runnable task = () -> {
+        try{
+            ORB orb = ORB.init(args, null);
+
+            POA rootpoa = (POA)orb.resolve_initial_references("RootPOA");
+            rootpoa.the_POAManager().activate();
+
+//            HelloImpl helloImpl = new HelloImpl();
+            MethodImplementation mi = new MethodImplementation(serverID, serverName);
+            mi.setORB(orb);
+
+            org.omg.CORBA.Object ref = rootpoa.servant_to_reference(mi);
+
+            movieTicketBookingInterface href = movieTicketBookingInterfaceHelper.narrow(ref);
+
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+
+            String name = "verdun";
+            NameComponent path[] = ncRef.to_name( name );
+            ncRef.rebind(path, href);
+            System.out.println("Verdun server ready and waiting ...");
+
             listenForRequest(mi, Verdun_Server_Port, serverName, serverID);
-        };
-        Thread thread = new Thread(task);
-        thread.start();
+            while (true){
+                orb.run();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+//        MethodImplementation mi = new MethodImplementation(serverID, serverName);
+//        Naming.bind("rmi://localhost/ver", mi);
+//        System.out.println("Server Verdun started");
+//        //Log File
+//        addTestData(mi);
+//        Runnable task = () -> {
+//            listenForRequest(mi, Verdun_Server_Port, serverName, serverID);
+//        };
+//        Thread thread = new Thread(task);
+//        thread.start();
     }
 
     private static void addTestData(MethodImplementation remoteObject) {
-        remoteObject.addNewMovie("VERA120223", MovieModel.AVATAR, 2);
-        remoteObject.addNewMovie("VERA180223", MovieModel.TITANIC, 2);
+        remoteObject.addNewMovie("VERA120223", MovieModel.AVATAR, 20);
+        remoteObject.addNewMovie("VERA120223", MovieModel.TITANIC, 20);
+        remoteObject.addNewMovie("VERM120223", MovieModel.AVATAR, 20);
+        remoteObject.addNewMovie("VERE120223", MovieModel.TITANIC, 20);
     }
 
     private static void listenForRequest(MethodImplementation obj, int serverUdpPort, String serverName, String serverID) {

@@ -57,5 +57,17 @@ public interface ClientInterface extends Remote {
      * @param noOfTickets
      * @return
      */
-    public String cancelMovieTickets(String customerID, String movieID, String movieName, int noOfTickets) throws RemoteException;
-}
+    public String cancelMovieTickets(String customerID, String movieID, String movieName, int noOfTickets) throws RemoteException;    /**
+     * Cancel any tickets booked
+     * by the user
+     * @param customerID
+     * @param old_movieID
+     * @param new_movieID
+     * @param new_movieName
+     * @param old_movieName
+     * @param noOfTickets
+     * @return
+     */
+    public String exchangeTickets(String customerID, String old_movieID, String new_movieID, String new_movieName, String old_movieName, int noOfTickets) throws RemoteException;
+
+    }

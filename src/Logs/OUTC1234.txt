@@ -1,0 +1,4 @@
+24-02-2023 19:38:02 : bookMovieTickets : OUTC1234  Avatar :  : Success: Movie ATWM020323 Booked Successfully
+24-02-2023 19:38:05 : getBookingSchedule : OUTC1234 :  : Avatar:
+ATWM020323 : 5
+

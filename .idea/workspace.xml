@@ -5,22 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4abe7538-aa98-461c-bffe-63daac0195e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/movie_ticket_booking_system_design.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Client/Client.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Constants/Constants.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Interface/ClientInterface.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/MethodImplementation/MethodImplementation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Models/ClientModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Models/MovieModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Server/Atwater.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Server/Outremont.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Server/Verdun.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Client/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Constants/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Constants/Constants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MethodImplementation/MethodImplementation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MethodImplementation/MethodImplementation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Models/MovieModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Models/MovieModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Atwater.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Server/Atwater.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Outremont.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Server/Outremont.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Verdun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Server/Verdun.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,28 +41,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "D:/MOVIE_TICKET_BOOKING",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="movie_ticket_booking_system_design" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="movie_ticket_booking_system_design" />
-      <option name="filePath" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -79,6 +59,8 @@
       <option name="presentableId" value="Default" />
       <updated>1675796931315</updated>
       <workItem from="1675796932497" duration="673000" />
+      <workItem from="1676081349431" duration="423000" />
+      <workItem from="1676425602411" duration="1000" />
     </task>
     <servers />
   </component>
