@@ -12,8 +12,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -45,7 +44,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
     // HashMap<ClientID, Client>
     private Map<String, ClientModel> serverClients;
 
-    public MethodImplementation(String serverID, String serverName) throws RemoteException{
+    public MethodImplementation(String serverID, String serverName) {
         super();
         this.serverID = serverID;
         this.serverName = serverName;
@@ -131,7 +130,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
             if (allMovies.get(movieType).containsKey(movieID)) {
                 List<String> registeredClients = allMovies.get(movieType).get(movieID).getRegisteredClientIDs();
                 allMovies.get(movieType).remove(movieID);
-                // addCustomersToNextSameEvent(movieID, movieType, registeredClients);
+                addCustomersToNextSameEvent(movieID, movieType, registeredClients);
                 writeToLog("removeMovieSlots",movieID+" "+movieType+" ",Status, "Movie Slots Removed for " + movieID);
                 response = "Success: Movie Removed Successfully";
 
@@ -500,7 +499,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     }
 
-    /*private String getNextSameEvent(Set<String> keySet, String movieType, String oldMovieID) {
+    private String getNextSameEvent(Set<String> keySet, String movieType, String oldMovieID, int noOfTickets) {
         List<String> sortedIDs = new ArrayList<String>(keySet);
         sortedIDs.add(oldMovieID);
         Collections.sort(sortedIDs, new Comparator<String>() {
@@ -543,12 +542,12 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         });
         int index = sortedIDs.indexOf(oldMovieID) + 1;
         for (int i = index; i < sortedIDs.size(); i++) {
-            *//*if (!allMovies.get(movieType).get(sortedIDs.get(i)).isFull()) {
+            if (!allMovies.get(movieType).get(sortedIDs.get(i)).isFull(noOfTickets)) {
                 return sortedIDs.get(i);
-            }*//*
+            }
         }
         return "Failed";
-    }*/
+    }
 
     private boolean exceedWeeklyLimit(String customerID, String movieDate) {
         int limit = 0;
@@ -609,23 +608,24 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         return false;
     }
 
-    /*private void addCustomersToNextSameEvent(String oldMovieID, String movieType, List<String> registeredClients) throws RemoteException {
+    private void addCustomersToNextSameEvent(String oldMovieID, String movieType, List<String> registeredClients) {
         for (String customerID :
                 registeredClients) {
             if (customerID.substring(0, 3).equals(serverID)) {
+                int noOfTickets = clientMovies.get(customerID).get(movieType).get(oldMovieID);
                 clientMovies.get(customerID).get(movieType).remove(oldMovieID);
-                String nextSameEventResult = getNextSameEvent(allMovies.get(movieType).keySet(), movieType, oldMovieID);
+                String nextSameEventResult = getNextSameEvent(allMovies.get(movieType).keySet(), movieType, oldMovieID, noOfTickets);
                 if (nextSameEventResult.equals("Failed")) {
                     return;
                 } else {
 
-                     bookMovieTickets(customerID, nextSameEventResult, movieType, );
+                     bookMovieTickets(customerID, nextSameEventResult, movieType, noOfTickets);
                 }
             } else {
                 sendUDPMessage(getServerPort(customerID.substring(0, 3)), "removeMovie", customerID, movieType, oldMovieID, 0);
             }
         }
-    }*/
+    }
 
     private boolean checkMovieBookingCancel(String customerId, String movieId, String movieName, int numberOfTickets){
         if(clientMovies.get(customerId).get(movieName).get(movieId) >= numberOfTickets) {
@@ -668,7 +668,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     //--------------------------- UDP Specific functions (ONLY FOR UDP CALLS)---------------------------
 
-    public String removeMovieUDP(String oldEventID, String eventType, String customerID) throws RemoteException {
+    public String removeMovieUDP(String oldEventID, String eventType, String customerID) {
         if (!serverClients.containsKey(customerID)) {
             addNewCustomerToClients(customerID);
             return "Failed: You " + customerID + " Are Not Registered in " + oldEventID;
@@ -682,7 +682,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         }
     }
 
-    public String listMovieAvailabilityUDP(String eventType) throws RemoteException {
+    public String listMovieAvailabilityUDP(String eventType) {
         Map<String, MovieModel> events = allMovies.get(eventType);
         StringBuilder builder = new StringBuilder();
         if (events.size() != 0) {

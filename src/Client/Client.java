@@ -312,7 +312,7 @@ public class Client {
 
     public static void writeToLogFile(String operation, String params, String responceDetails) {
         try {
-            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING\\movie_ticket_booking_system_design\\src\\Logs\\" + userSession + ".txt", true);
+            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING - CORBA\\movie_ticket_booking_system_design\\src\\Logs\\" + userSession + ".txt", true);
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String log = dateFormat.format(LocalDateTime.now()) + " : " + operation + " : " + params + " : "
                     + " : " + responceDetails + "\n";
