@@ -14,8 +14,14 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -73,7 +79,7 @@ public class MethodImplementation implements ClientInterface {
 
     // --------------------Interface Implementation------------------------------
 
-    public String addMovieSlots(String movieID, String movieType, int bookingCapacity){
+    public String addMovieSlots(String movieID, String movieType, int bookingCapacity) {
         log = "Slots added.";
         Status = "Passed";
 
@@ -102,14 +108,21 @@ public class MethodImplementation implements ClientInterface {
             return response;
         }
         if (MovieModel.detectMovieServer(movieID).equals(serverName)) {
-            MovieModel event = new MovieModel(movieType, movieID, bookingCapacity);
-            Map<String, MovieModel> movieHashMap = allMovies.get(movieType);
-            movieHashMap.put(movieID, event);
-            allMovies.put(movieType, movieHashMap);
-            log = "Slots added.";
-            Status = "Passed";
-            writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " have been added");
-            response = "Success: Event " + movieID + " added successfully";
+            if(isWithinAWeek(movieID)) {
+                MovieModel event = new MovieModel(movieType, movieID, bookingCapacity);
+                Map<String, MovieModel> movieHashMap = allMovies.get(movieType);
+                movieHashMap.put(movieID, event);
+                allMovies.put(movieType, movieHashMap);
+                log = "Slots added.";
+                Status = "Passed";
+                writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " have been added");
+                response = "Success: Event " + movieID + " added successfully";
+            } else {
+                log = "Slots not added.";
+                Status = "Failed";
+                writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " can't be added because because you can only add a schedule within a week from today");
+                response = "Failed: Cannot Add Movies to Server because you can only add a schedule within a week from today";
+            }
         } else {
             log = "Slots not added.";
             Status = "Failed";
@@ -126,7 +139,7 @@ public class MethodImplementation implements ClientInterface {
             if (allMovies.get(movieType).containsKey(movieID)) {
                 List<String> registeredClients = allMovies.get(movieType).get(movieID).getRegisteredClientIDs();
                 allMovies.get(movieType).remove(movieID);
-                // addCustomersToNextSameEvent(movieID, movieType, registeredClients);
+                addCustomersToNextSameEvent(movieID, movieType, registeredClients);
                 writeToLog("removeMovieSlots",movieID+" "+movieType+" ",Status, "Movie Slots Removed for " + movieID);
                 response = "Success: Movie Removed Successfully";
 
@@ -495,7 +508,7 @@ public class MethodImplementation implements ClientInterface {
 
     }
 
-    /*private String getNextSameEvent(Set<String> keySet, String movieType, String oldMovieID) {
+    private String getNextSameEvent(Set<String> keySet, String movieType, String oldMovieID, int noOfTickets) {
         List<String> sortedIDs = new ArrayList<String>(keySet);
         sortedIDs.add(oldMovieID);
         Collections.sort(sortedIDs, new Comparator<String>() {
@@ -538,12 +551,12 @@ public class MethodImplementation implements ClientInterface {
         });
         int index = sortedIDs.indexOf(oldMovieID) + 1;
         for (int i = index; i < sortedIDs.size(); i++) {
-            *//*if (!allMovies.get(movieType).get(sortedIDs.get(i)).isFull()) {
+            if (!allMovies.get(movieType).get(sortedIDs.get(i)).isFull(noOfTickets)) {
                 return sortedIDs.get(i);
-            }*//*
+            }
         }
         return "Failed";
-    }*/
+    }
 
     private boolean exceedWeeklyLimit(String customerID, String movieDate) {
         int limit = 0;
@@ -604,23 +617,24 @@ public class MethodImplementation implements ClientInterface {
         return false;
     }
 
-    /*private void addCustomersToNextSameEvent(String oldMovieID, String movieType, List<String> registeredClients) throws RemoteException {
+    private void addCustomersToNextSameEvent(String oldMovieID, String movieType, List<String> registeredClients) {
         for (String customerID :
                 registeredClients) {
             if (customerID.substring(0, 3).equals(serverID)) {
+                int noOfTickets = clientMovies.get(customerID).get(movieType).get(oldMovieID);
                 clientMovies.get(customerID).get(movieType).remove(oldMovieID);
-                String nextSameEventResult = getNextSameEvent(allMovies.get(movieType).keySet(), movieType, oldMovieID);
+                String nextSameEventResult = getNextSameEvent(allMovies.get(movieType).keySet(), movieType, oldMovieID, noOfTickets);
                 if (nextSameEventResult.equals("Failed")) {
                     return;
                 } else {
 
-                     bookMovieTickets(customerID, nextSameEventResult, movieType, );
+                     bookMovieTickets(customerID, nextSameEventResult, movieType, noOfTickets);
                 }
             } else {
                 sendUDPMessage(getServerPort(customerID.substring(0, 3)), "removeMovie", customerID, movieType, oldMovieID, 0);
             }
         }
-    }*/
+    }
 
     private boolean checkMovieBookingCancel(String customerId, String movieId, String movieName, int numberOfTickets){
         if(clientMovies.get(customerId).get(movieName).get(movieId) >= numberOfTickets) {
@@ -651,6 +665,15 @@ public class MethodImplementation implements ClientInterface {
         } else {
             return false;
         }
+    }
+
+    private boolean isWithinAWeek(String movieID) {
+
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyy");
+        LocalDate date = LocalDate.parse(movieID.substring(4, 10), formatter);
+        long daysBetween = ChronoUnit.DAYS.between(now, date);
+        return (daysBetween <= 7 && daysBetween >= 0);
     }
 
     private synchronized boolean clientHasMovie(String customerID, String movieType, String movieId) {
