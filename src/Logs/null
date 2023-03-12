@@ -24,3 +24,4 @@
 24-02-2023 19:37:33 : listMovieShowAvailability : Avatar : Passed : List shown successfully for Avatar
 24-02-2023 19:38:02 : bookMovieTickets : Avatar OUTC1234 ATWM020323 5 : Passed : Movie Ticket Booked Successfully 
 24-02-2023 19:38:05 : getBookingSchedule : OUTC1234 : Passed : Booking Schedule Shown Successfully
+12-03-2023 12:11:57 : addMovieSlots : ATWM120323 Avatar 12 : Passed : 12 slots for movie Avatar by movie ID ATWM120323 have been added

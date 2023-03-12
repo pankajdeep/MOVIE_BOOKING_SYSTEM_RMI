@@ -1,9 +1,11 @@
 package Interface;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
-public interface ClientInterface extends Remote {
+@WebService
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public interface ClientInterface {
     /**
      * Add New Movie Slots
      * @param movieID
@@ -11,7 +13,7 @@ public interface ClientInterface extends Remote {
      * @param bookingCapacity
      * @return
      */
-    public String addMovieSlots(String movieID, String movieName, int bookingCapacity) throws RemoteException;
+    public String addMovieSlots(String movieID, String movieName, int bookingCapacity);
 
     /**
      * Remove Movie Slots
@@ -19,7 +21,7 @@ public interface ClientInterface extends Remote {
      * @param movieName
      * @return
      */
-    public String removeMovieSlots(String movieID, String movieName) throws RemoteException;
+    public String removeMovieSlots(String movieID, String movieName);
 
     /**
      * List all the no of tickets
@@ -28,7 +30,7 @@ public interface ClientInterface extends Remote {
      * @param movieName
      * @return
      */
-    public String listMovieShowAvailability(String movieName) throws RemoteException;
+    public String listMovieShowAvailability(String movieName);
 
     /**
      * Book Movie Tickets
@@ -38,7 +40,7 @@ public interface ClientInterface extends Remote {
      * @param noOfTickets
      * @return
      */
-    public String bookMovieTickets(String customerID, String movieID, String movieName, int noOfTickets) throws RemoteException;
+    public String bookMovieTickets(String customerID, String movieID, String movieName, int noOfTickets);
 
     /**
      * Get list of all bookings
@@ -46,7 +48,7 @@ public interface ClientInterface extends Remote {
      * @param customerID
      * @return
      */
-    public String getBookingSchedule(String customerID) throws RemoteException;
+    public String getBookingSchedule(String customerID);
 
     /**
      * Cancel any tickets booked
@@ -57,7 +59,8 @@ public interface ClientInterface extends Remote {
      * @param noOfTickets
      * @return
      */
-    public String cancelMovieTickets(String customerID, String movieID, String movieName, int noOfTickets) throws RemoteException;    /**
+    public String cancelMovieTickets(String customerID, String movieID, String movieName, int noOfTickets);
+    /**
      * Cancel any tickets booked
      * by the user
      * @param customerID
@@ -68,6 +71,6 @@ public interface ClientInterface extends Remote {
      * @param noOfTickets
      * @return
      */
-    public String exchangeTickets(String customerID, String old_movieID, String new_movieID, String new_movieName, String old_movieName, int noOfTickets) throws RemoteException;
+    public String exchangeTickets(String customerID, String old_movieID, String new_movieID, String new_movieName, String old_movieName, int noOfTickets);
 
     }

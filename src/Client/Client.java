@@ -5,16 +5,16 @@ import Interface.ClientInterface;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import movieTicketBookingInterfaceApp.movieTicketBookingInterface;
-import movieTicketBookingInterfaceApp.movieTicketBookingInterfaceHelper;
-import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
 import org.omg.CosNaming.NamingContextPackage.InvalidName;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 
-import java.rmi.NotBoundException;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import java.net.URL;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
@@ -25,19 +25,26 @@ import static Constants.Constants.*;
 public class Client {
     public static String userSession;
     public static String log;
+    private static ClientInterface movieObj;
+    public static Service atwaterService;
+    public static Service outremontService;
+    public static Service verdunService;
     public static void main(String[] args) throws Exception {
-        try {
-            ORB orb = ORB.init(args, null);
-            // -ORBInitialPort 1050 -ORBInitialHost localhost
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-            startMain(ncRef);
-        } catch (Exception e) {
-            System.out.println("Client ORB init exception: " + e);
-            e.printStackTrace();
-        }
+        URL atwaterURL = new URL("http://localhost:8080/atwater?wsdl");
+        QName atwaterQName = new QName("http://MethodImplementation/", "MethodImplementationService");
+        atwaterService = Service.create(atwaterURL, atwaterQName);
+
+        URL outremontURL = new URL("http://localhost:8081/outremont?wsdl");
+        QName outremontQName = new QName("http://MethodImplementation/", "MethodImplementationService");
+        outremontService = Service.create(outremontURL, outremontQName);
+
+        URL verdunURL = new URL("http://localhost:8082/verdun?wsdl");
+        QName verdunQName = new QName("http://MethodImplementation/", "MethodImplementationService");
+        verdunService = Service.create(verdunURL, verdunQName);
+
+        startMain();
     }
-    public static void startMain(NamingContextExt ncRef) throws IOException, NotBoundException, InvalidName, CannotProceed, NotFound {
+    public static void startMain() throws Exception {
 
         Scanner input = new Scanner(System.in);
         System.out.println("Please enter user id: ");
@@ -45,8 +52,6 @@ public class Client {
         userSession = userID;
         String clientType = checkClientType(userID);
         String serverPort = getServerPort(userID.substring(0,3));
-        movieTicketBookingInterface movieObj = movieTicketBookingInterfaceHelper.narrow(ncRef.resolve_str(serverPort));
-
         if(clientType == "Admin"){
             //logger file
             if(serverPort == "false"){
@@ -134,7 +139,7 @@ public class Client {
                         break;
                     case 8:
                         //logger file
-                        startMain(ncRef);
+                        startMain();
                         break;
                 }
             }
@@ -194,7 +199,7 @@ public class Client {
                         break;
                     case 5:
                         //logger file
-                        startMain(ncRef);
+                        startMain();
                         break;
                 }
             }
@@ -202,7 +207,7 @@ public class Client {
         else {
             System.out.println("Incorrect UserID");
             // Implement Logger
-            startMain(ncRef);
+            startMain();
         }
 
 
@@ -281,10 +286,13 @@ public class Client {
 
     private static String getServerPort(String server) {
         if (server.equalsIgnoreCase("ATW")) {
+            movieObj = atwaterService.getPort(ClientInterface.class);
             return "atwater";
         } else if (server.equalsIgnoreCase("OUT")) {
+            movieObj = outremontService.getPort(ClientInterface.class);
             return "outremont";
         } else if (server.equalsIgnoreCase("VER")) {
+            movieObj = verdunService.getPort(ClientInterface.class);
             return "verdun";
         }
         return "false";
@@ -312,7 +320,7 @@ public class Client {
 
     public static void writeToLogFile(String operation, String params, String responceDetails) {
         try {
-            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING\\movie_ticket_booking_system_design\\src\\Logs\\" + userSession + ".txt", true);
+            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING - WebServices\\movie_ticket_booking_system_design\\src\\Logs\\" + userSession + ".txt", true);
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String log = dateFormat.format(LocalDateTime.now()) + " : " + operation + " : " + params + " : "
                     + " : " + responceDetails + "\n";

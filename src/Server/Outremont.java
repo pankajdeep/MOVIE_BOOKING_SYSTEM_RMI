@@ -2,14 +2,13 @@ package Server;
 
 import MethodImplementation.MethodImplementation;
 import Models.MovieModel;
-import movieTicketBookingInterfaceApp.movieTicketBookingInterface;
-import movieTicketBookingInterfaceApp.movieTicketBookingInterfaceHelper;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
 
+import javax.xml.ws.Endpoint;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,48 +19,27 @@ public class Outremont {
     private static final String serverID = "OUT";
     private static final String serverName = "Outremont";
     private static final int Outremont_Server_Port = 7788;
+    private static final String serverEndPoint = "http://localhost:8081/outremont";
     public static void main(String[] args) throws Exception{
-        try{
-            ORB orb = ORB.init(args, null);
+        try {
+            System.out.println(serverName + " Server Started...");
+            MethodImplementation service = new MethodImplementation(serverID, serverName);
 
-            POA rootpoa = (POA)orb.resolve_initial_references("RootPOA");
-            rootpoa.the_POAManager().activate();
+            Endpoint endpoint = Endpoint.publish(serverEndPoint, service);
 
-//            HelloImpl helloImpl = new HelloImpl();
-            MethodImplementation mi = new MethodImplementation(serverID, serverName);
-            mi.setORB(orb);
+            System.out.println(serverName + " Server is Up & Running");
 
-            org.omg.CORBA.Object ref = rootpoa.servant_to_reference(mi);
+//            addTestData(server);
+            Runnable task = () -> {
+                listenForRequest(service, Outremont_Server_Port, serverName, serverID);
+            };
+            Thread thread = new Thread(task);
+            thread.start();
 
-            movieTicketBookingInterface href = movieTicketBookingInterfaceHelper.narrow(ref);
-
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-
-            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-
-            String name = "outremont";
-            NameComponent path[] = ncRef.to_name( name );
-            ncRef.rebind(path, href);
-            System.out.println("Outremont server ready and waiting ...");
-
-            listenForRequest(mi, Outremont_Server_Port, serverName, serverID);
-            while (true){
-                orb.run();
-            }
+        } catch (Exception e) {
+//            System.err.println("Exception: " + e);
+            e.printStackTrace(System.out);
         }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-//        MethodImplementation mi = new MethodImplementation(serverID, serverName);
-//        Naming.bind("rmi://localhost/out", mi);
-//        System.out.println("Server Outremont started");
-//        //Log File
-//        addTestData(mi);
-//        Runnable task = () -> {
-//            listenForRequest(mi, Outremont_Server_Port, serverName, serverID);
-//        };
-//        Thread thread = new Thread(task);
-//        thread.start();
     }
 
     private static void addTestData(MethodImplementation remoteObject) {

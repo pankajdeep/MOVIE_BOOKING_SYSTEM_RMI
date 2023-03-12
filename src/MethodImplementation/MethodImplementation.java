@@ -3,23 +3,26 @@ package MethodImplementation;
 import Interface.ClientInterface;
 import Models.ClientModel;
 import Models.MovieModel;
-import movieTicketBookingInterfaceApp.movieTicketBookingInterfacePOA;
-import org.omg.CORBA.ORB;
 
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MethodImplementation extends movieTicketBookingInterfacePOA {
+@WebService(endpointInterface = "Interface.ClientInterface")
+
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public class MethodImplementation implements ClientInterface {
     private String serverID;
     private String serverName;
     public static HashMap<String,String> file = new HashMap<>();
@@ -45,7 +48,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
     // HashMap<ClientID, Client>
     private Map<String, ClientModel> serverClients;
 
-    public MethodImplementation(String serverID, String serverName) throws RemoteException{
+    public MethodImplementation(String serverID, String serverName) {
         super();
         this.serverID = serverID;
         this.serverName = serverName;
@@ -55,14 +58,6 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         allMovies.put(MovieModel.TITANIC, new ConcurrentHashMap<>());
         clientMovies = new ConcurrentHashMap<>();
         serverClients = new ConcurrentHashMap<>();
-    }
-
-    private ORB orb;
-    public void setORB(ORB orb_val) {
-        orb = orb_val;
-    }
-    public void shutdown() {
-        orb.shutdown(false);
     }
 
     private static int getServerPort(String server) {
@@ -668,7 +663,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     //--------------------------- UDP Specific functions (ONLY FOR UDP CALLS)---------------------------
 
-    public String removeMovieUDP(String oldEventID, String eventType, String customerID) throws RemoteException {
+    public String removeMovieUDP(String oldEventID, String eventType, String customerID) {
         if (!serverClients.containsKey(customerID)) {
             addNewCustomerToClients(customerID);
             return "Failed: You " + customerID + " Are Not Registered in " + oldEventID;
@@ -682,7 +677,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         }
     }
 
-    public String listMovieAvailabilityUDP(String eventType) throws RemoteException {
+    public String listMovieAvailabilityUDP(String eventType) {
         Map<String, MovieModel> events = allMovies.get(eventType);
         StringBuilder builder = new StringBuilder();
         if (events.size() != 0) {
@@ -726,7 +721,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     public void writeToLog(String operation, String params, String status, String responceDetails) {
         try {
-            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING\\movie_ticket_booking_system_design\\src\\Logs\\" + file.get(this.serverName), true);
+            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING - WebServices\\movie_ticket_booking_system_design\\src\\Logs\\" + file.get(this.serverName), true);
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String log = dateFormat.format(LocalDateTime.now()) + " : " + operation + " : " + params + " : " + status
                     + " : " + responceDetails + "\n";

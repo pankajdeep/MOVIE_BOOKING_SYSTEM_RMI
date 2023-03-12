@@ -1,3 +1,4 @@
 14-02-2023 20:54:16 : addMovieSlots : ATWA1234 ATWM250223 Avatar 30 :  : Success: Event ATWM250223 added successfully
 24-02-2023 19:37:27 : addMovieSlots : ATWA1234 ATWM020323 Avatar 20 :  : Success: Event ATWM020323 added successfully
 24-02-2023 19:37:33 : listMovieShowAvailability : ATWA1234  Avatar :  : Avatar: ATWM020323 20
+12-03-2023 12:11:58 : addMovieSlots : ATWA1234 ATWM120323 Avatar 12 :  : Success: Event ATWM120323 added successfully
