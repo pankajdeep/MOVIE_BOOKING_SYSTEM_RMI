@@ -21,7 +21,3 @@ module movieTicketBookingInterfaceApp
 	};
 };
 
-
-
-spring.data.mongodb.uri=mongodb+srv://pankajdeepsahota:pankaj1998@cluster0.247lsmc.mongodb.net/?retryWrites=true&w=majority
-spring.data.mongodb.database=healthassist

@@ -1,1 +1,10 @@
 05-03-2023 20:28:27 : addMovieSlots : ATWA1234 ATWM190223 Avatar 10 :  : Success: Event ATWM190223 added successfully
+06-03-2023 01:37:59 : addMovieSlots : ATWA1234 ATWA190223 Avatar 12 :  : Success: Event ATWA190223 added successfully
+06-03-2023 10:35:27 : addMovieSlots : ATWA1234 ATWA190223 Avatar 23 :  : Success: Event ATWA190223 added successfully
+06-03-2023 13:53:14 : addMovieSlots : ATWA1234 ATWM070323 Avatar 12 :  : Success: Event ATWM070323 added successfully
+06-03-2023 14:18:46 : addMovieSlots : ATWA1234 ATWM080323 Avatar 12 :  : Success: Event ATWM080323 added successfully
+06-03-2023 14:38:47 : addMovieSlots : ATWA1234 ATWM030323 Avatar 12 :  : Success: Event ATWM030323 added successfully
+06-03-2023 14:43:07 : addMovieSlots : ATWA1234 ATWM030323 Avatar 12 :  : Failed: Cannot Add Movies to Server because can't add schedule for more than a week from today
+06-03-2023 14:43:50 : addMovieSlots : ATWA1234 ATWM060323 Avatar 12 :  : Success: Event ATWM060323 added successfully
+06-03-2023 15:16:46 : addMovieSlots : ATWA1234 ATWM070323 Avatar 20 :  : Success: Event ATWM070323 added successfully
+06-03-2023 21:56:08 : addMovieSlots : ATWA1234 ATWM090323 Avengers 20 :  : Success: Event ATWM090323 added successfully

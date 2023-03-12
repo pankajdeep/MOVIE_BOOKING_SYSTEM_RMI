@@ -13,8 +13,13 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -77,7 +82,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     // --------------------Interface Implementation------------------------------
 
-    public String addMovieSlots(String movieID, String movieType, int bookingCapacity){
+    public String addMovieSlots(String movieID, String movieType, int bookingCapacity) {
         log = "Slots added.";
         Status = "Passed";
 
@@ -106,14 +111,21 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
             return response;
         }
         if (MovieModel.detectMovieServer(movieID).equals(serverName)) {
-            MovieModel event = new MovieModel(movieType, movieID, bookingCapacity);
-            Map<String, MovieModel> movieHashMap = allMovies.get(movieType);
-            movieHashMap.put(movieID, event);
-            allMovies.put(movieType, movieHashMap);
-            log = "Slots added.";
-            Status = "Passed";
-            writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " have been added");
-            response = "Success: Event " + movieID + " added successfully";
+            if(isWithinAWeek(movieID)) {
+                MovieModel event = new MovieModel(movieType, movieID, bookingCapacity);
+                Map<String, MovieModel> movieHashMap = allMovies.get(movieType);
+                movieHashMap.put(movieID, event);
+                allMovies.put(movieType, movieHashMap);
+                log = "Slots added.";
+                Status = "Passed";
+                writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " have been added");
+                response = "Success: Event " + movieID + " added successfully";
+            } else {
+                log = "Slots not added.";
+                Status = "Failed";
+                writeToLog("addMovieSlots",movieID+" "+movieType+" "+bookingCapacity,Status,bookingCapacity + " slots for movie " + movieType + " by movie ID " + movieID + " can't be added because because you can only add a schedule within a week from today");
+                response = "Failed: Cannot Add Movies to Server because you can only add a schedule within a week from today";
+            }
         } else {
             log = "Slots not added.";
             Status = "Failed";
@@ -658,6 +670,15 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
         }
     }
 
+    private boolean isWithinAWeek(String movieID) {
+
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyy");
+        LocalDate date = LocalDate.parse(movieID.substring(4, 10), formatter);
+        long daysBetween = ChronoUnit.DAYS.between(now, date);
+        return (daysBetween <= 7 && daysBetween >= 0);
+    }
+
     private synchronized boolean clientHasMovie(String customerID, String movieType, String movieId) {
         if (clientMovies.get(customerID).containsKey(movieType)) {
             return clientMovies.get(customerID).get(movieType).containsKey(movieId);
@@ -726,7 +747,7 @@ public class MethodImplementation extends movieTicketBookingInterfacePOA {
 
     public void writeToLog(String operation, String params, String status, String responceDetails) {
         try {
-            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING\\movie_ticket_booking_system_design\\src\\Logs\\" + file.get(this.serverName), true);
+            FileWriter myWriter = new FileWriter("D:\\MOVIE_TICKET_BOOKING - CORBA\\movie_ticket_booking_system_design\\src\\Logs\\" + file.get(this.serverName), true);
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String log = dateFormat.format(LocalDateTime.now()) + " : " + operation + " : " + params + " : " + status
                     + " : " + responceDetails + "\n";
